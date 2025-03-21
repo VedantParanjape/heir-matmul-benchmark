@@ -1,5 +1,4 @@
 #include "matmul.hpp"
-
 #include <iostream>
 #include <memory>
 #include <openfhe.h>
@@ -33,7 +32,7 @@ std::vector<LWEInt> matmul(BinFHEContextT cc, std::vector<LWEInt> A,
       for (int k = 0; k < n3; k++) {
         LWEInt A_ik = A[i * n3 + k];
         LWEInt B_kj = B[k * n2 + j];
-        result[i * n2 + j] = mac8(cc, A_ik, B_kj, result[i * n2 + j]);
+        result[i * n2 + j] = add8(cc, result[i * n2 + j], mul8(cc, A_ik, B_kj));
       }
     }
   }
@@ -70,25 +69,38 @@ int main(int argc, char **argv) {
       }
     }
 
-    auto start = std::chrono::high_resolution_clock::now();
-    auto out = matmul(cc, A, B, matmulAh, matmulAw, matmulBh, matmulBw);
-    auto end = std::chrono::high_resolution_clock::now();
+    std::vector<size_t> times;
+    times.reserve(30);
 
-    for (int i = 0; i < matmulCh; i++) {
-      for (int j = 0; j < matmulCw; j++) {
-        C[i * matmulCw + j] = decrypt(cc, sk, out[i * matmulCw + j]);     
+    for (int i = 0; i < 30; i++) {
+      std::cerr << i + 1 << "/30...";
+      auto start = std::chrono::high_resolution_clock::now();
+      auto out = matmul(cc, A, B, matmulAh, matmulAw, matmulBh, matmulBw);
+      auto end = std::chrono::high_resolution_clock::now();
+      times.push_back(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+      std::cerr << times[times.size() - 1] << "...";
+
+      for (int i = 0; i < matmulCh; i++) {
+        for (int j = 0; j < matmulCw; j++) {
+          C[i * matmulCw + j] = decrypt(cc, sk, out[i * matmulCw + j]);     
+        }
       }
+  
+      std::cout << "Result...";
+      for (int i = 0; i < matmulCh; i++) {
+        for (int j = 0; j < matmulCw; j++) {
+          if (C[i * matmulCw + j] != 252) {
+            std::cout << "Error\n";
+          }
+        }
+      }
+      std::cout << "OK\n";
     }
 
-    std::cout << "Result: \n";
-    for (int i = 0; i < matmulCh; i++) {
-      for (int j = 0; j < matmulCw; j++) {
-        std::cout << C[i * matmulCw + j] << " ";
-      }
-      std::cout << "\n";
+    for (auto time : times) {
+      std::cout << time << ",";
     }
-    std::cout << "matmul took " 
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
-    
+    std::cout << "\n";
+
     return 0;
 }
