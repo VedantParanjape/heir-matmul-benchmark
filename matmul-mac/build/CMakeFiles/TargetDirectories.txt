@@ -1,4 +1,0 @@
-/local/scratch/a/paranjav/coyote-project/paper/rebuttal-benchmarks/matmul-mac/build/CMakeFiles/matmul-mac.opt.dir
-/local/scratch/a/paranjav/coyote-project/paper/rebuttal-benchmarks/matmul-mac/build/CMakeFiles/matmul-mac.unopt.dir
-/local/scratch/a/paranjav/coyote-project/paper/rebuttal-benchmarks/matmul-mac/build/CMakeFiles/edit_cache.dir
-/local/scratch/a/paranjav/coyote-project/paper/rebuttal-benchmarks/matmul-mac/build/CMakeFiles/rebuild_cache.dir
